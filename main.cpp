@@ -168,6 +168,6 @@ int main()
         if(node.cost < best_node.cost) best_node = node;
     }
     best_node.print();
-    //cout<<best_node.cost<<endl;
+    cout<<best_node.cost<<endl;
     return 0;
 }

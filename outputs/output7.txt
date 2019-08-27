@@ -1,0 +1,9 @@
+---CAG-C
+G-TCAC-G
+---CTG--
+GCTCTGTG
+-CGACT-G
+GC-GAA-C
+AC-CAG-C
+G-T-A--C
+1271
