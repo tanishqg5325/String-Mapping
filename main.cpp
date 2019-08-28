@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #define pb push_back
+#define X first
+#define Y second
 using namespace std;
 typedef long long ll;
 
@@ -12,8 +14,9 @@ map<char, int> vocab;   // mapping of vocabulary to {0, 1, 2 ... |V|-1} and dash
 vector<int> act_len;    // original length of strings
 ll seed = time(0);
 
-inline void update_seed()
+inline void shuffle_vector(vector<int> &vec)
 {
+    shuffle(vec.begin(), vec.end(), default_random_engine(seed));
     seed = (seed * 43) % mod;
 }
 
@@ -24,14 +27,14 @@ public:
     vector<string> seq;
 
     // returns true if dash is present in all strings at position pos
-    bool isDashAtPosition(int pos)
+    /*bool isDashAtPosition(int pos)
     {
         assert(pos < n);
         for(int i=0;i<k;i++)
             if(seq[i][pos] != dash)
                 return false;
         return true;
-    }
+    }*/
 
     // matching cost of jth character of idth string with other strings
     ll getCost(int id, int j)
@@ -52,21 +55,21 @@ public:
         cost /= 2;
         for(int i=0;i<k;i++)
             cost += (cc * (n - act_len[i]));
-        for(int j=0;j<n;j++)
+        /*for(int j=0;j<n;j++)
             if(isDashAtPosition(j))
-                cost -= (cc * k);
+                cost -= (cc * k);*/
     }
 
     // computes new cost when j1 th and j2th character of ith string are swapped
     ll computeNewCost(int i, int j1, int j2)
     {
         ll ans = cost;
-        if(isDashAtPosition(j1)) ans += (cc * k);
-        if(isDashAtPosition(j2)) ans += (cc * k);
+        //if(isDashAtPosition(j1)) ans += (cc * k);
+        //if(isDashAtPosition(j2)) ans += (cc * k);
         ans -= (getCost(i, j1) + getCost(i, j2));
         swap(seq[i][j1], seq[i][j2]);
-        if(isDashAtPosition(j1)) ans -= (cc * k);
-        if(isDashAtPosition(j2)) ans -= (cc * k);
+        //if(isDashAtPosition(j1)) ans -= (cc * k);
+        //if(isDashAtPosition(j2)) ans -= (cc * k);
         ans += (getCost(i, j1) + getCost(i, j2));
         swap(seq[i][j1], seq[i][j2]);
         return ans;
@@ -75,10 +78,9 @@ public:
     bool moveToBestNeighbour()
     {
         ll min_cost = cost, curr_cost; int id, pos1, pos2;
-        vector<int> v(k); for(int i=0;i<k;i++) v[i] = i;
-        shuffle(v.begin(), v.end(), default_random_engine(seed));
-        update_seed();
-        for(int i : v)
+        vector<int> v1(k); for(int i=0;i<k;i++) v1[i] = i;
+        shuffle_vector(v1);
+        for(int i : v1)
             for(int j=0;j<n;j++)
                 if(seq[i][j] != dash)
                 {
@@ -111,14 +113,56 @@ public:
         return true;
     }
 
+    bool moveToFirstBestNeighbour()
+    {
+        ll curr_cost; int t;
+        vector<int> v1(k); for(int i=0;i<k;i++) v1[i] = i;
+        vector<int> v2(n); for(int i=0;i<n;i++) v2[i] = i;
+        shuffle_vector(v1);
+        for(int i : v1)
+        {
+            shuffle_vector(v2);
+            for(int j : v2)
+                if(seq[i][j] != dash)
+                {
+                    t = j-1;
+                    while(t >= 0 && seq[i][t] == dash)
+                    {
+                        curr_cost = computeNewCost(i, j, t);
+                        if(curr_cost < cost)
+                        {
+                            swap(seq[i][j], seq[i][t]);
+                            cost = curr_cost;
+                            return true;
+                        }
+                        t--;
+                    }
+                    t = j+1;
+                    while(t < n && seq[i][t] == dash)
+                    {
+                        curr_cost = computeNewCost(i, j, t);
+                        if(curr_cost < cost)
+                        {
+                            swap(seq[i][j], seq[i][t]);
+                            cost = curr_cost;
+                            return true;
+                        }
+                        t++;
+                    }
+                }
+        }
+        return false;
+    }
+
     void print()
     {
-        vector<int> v;
-        for(int i=0;i<n;i++) if(!isDashAtPosition(i)) v.pb(i);
+        //vector<int> v;
+        //for(int i=0;i<n;i++) if(!isDashAtPosition(i)) v.pb(i);
         for(int i=0;i<k;i++)
         {
-            for(int j : v) cout<<seq[i][j];
-            cout<<"\n";
+            //for(int j : v) cout<<seq[i][j];
+            cout<<seq[i]<<"\n";
+            //cout<<"\n";
         }
     }
 };
@@ -127,8 +171,7 @@ string random_string(const string &str, int N)
 {
     int n = str.size(); assert(N >= n);
     vector<int> v(N); for(int i=0;i<N;i++) v[i] = i;
-    shuffle(v.begin(), v.end(), default_random_engine(seed));
-    update_seed();
+    shuffle_vector(v);
     sort(v.begin(), v.begin() + n);
     string ans = ""; int k = 0;
     for(int i=0;i<N;i++)
@@ -173,13 +216,28 @@ int main()
             cin>>mc[i][j];
     cin>>c; assert(c == '#');
     ll cnt = 0;
-    Node best_node = random_restart(input_str, 2*N);
-    while(((double)clock()/CLOCKS_PER_SEC) < max_time)
+    Node best_node = random_restart(input_str, N);
+    vector<pair<ll, int>> cost_len(N+1);
+    for(int i=N;i<=2*N;i++)
     {
-        for(int i=N;i<=2*N;i++)
+        cost_len[i-N] = {(ll)0, i};
+        for(int j=0;j<10;j++)
         {
             Node node = random_restart(input_str, i);
             while(((double)clock()/CLOCKS_PER_SEC) < max_time && node.moveToBestNeighbour()) cnt++;
+            if(node.cost < best_node.cost) best_node = node;
+            cost_len[i-N].X += node.cost;
+        }
+    }
+    sort(cost_len.begin(), cost_len.end());
+    vector<int> best_lens;
+    for(int i=0;i<min(5, N+1);i++) best_lens.pb(cost_len[i].Y);
+    while(((double)clock()/CLOCKS_PER_SEC) < max_time)
+    {
+        for(int i : best_lens)
+        {
+            Node node = random_restart(input_str, i);
+            while(((double)clock()/CLOCKS_PER_SEC) < max_time && node.moveToFirstBestNeighbour()) cnt++;
             if(node.cost < best_node.cost) best_node = node;
         }
     }
