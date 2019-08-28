@@ -3,11 +3,19 @@
 using namespace std;
 typedef long long ll;
 
+ll mod = 1000000007;
+
 char dash = '-';
 int v, k, mc[27][27];   // v = |V|, k = # strings, mc = matching cost matrix
 ll cc;                  // cc = conversion cost
 map<char, int> vocab;   // mapping of vocabulary to {0, 1, 2 ... |V|-1} and dash to |V|
 vector<int> act_len;    // original length of strings
+ll seed = time(0);
+
+inline void update_seed()
+{
+    seed = (seed * 43) % mod;
+}
 
 class Node
 {
@@ -67,7 +75,10 @@ public:
     bool moveToBestNeighbour()
     {
         ll min_cost = cost, curr_cost; int id, pos1, pos2;
-        for(int i=0;i<k;i++)
+        vector<int> v(k); for(int i=0;i<k;i++) v[i] = i;
+        shuffle(v.begin(), v.end(), default_random_engine(seed));
+        update_seed();
+        for(int i : v)
             for(int j=0;j<n;j++)
                 if(seq[i][j] != dash)
                 {
@@ -116,7 +127,8 @@ string random_string(const string &str, int N)
 {
     int n = str.size(); assert(N >= n);
     vector<int> v(N); for(int i=0;i<N;i++) v[i] = i;
-    shuffle(v.begin(), v.end(), default_random_engine(time(0)));
+    shuffle(v.begin(), v.end(), default_random_engine(seed));
+    update_seed();
     sort(v.begin(), v.begin() + n);
     string ans = ""; int k = 0;
     for(int i=0;i<N;i++)
@@ -140,7 +152,7 @@ int main()
 {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL); cout.tie(NULL);
-    double max_time; cin>>max_time; max_time *= 60;
+    double max_time; cin>>max_time; max_time *= 60; max_time *= 0.98;
     cin>>v; char c; cin>>c; int N = 0;
     for(int i=0;i<v-1;i++)
     {
@@ -160,14 +172,20 @@ int main()
         for(int j=0;j<=v;j++)
             cin>>mc[i][j];
     cin>>c; assert(c == '#');
+    ll cnt = 0;
     Node best_node = random_restart(input_str, 2*N);
-    while(((double)clock()/CLOCKS_PER_SEC) < 0.9 * max_time)
+    while(((double)clock()/CLOCKS_PER_SEC) < max_time)
     {
-        Node node = random_restart(input_str, 2*N);
-        while(node.moveToBestNeighbour()) {}
-        if(node.cost < best_node.cost) best_node = node;
+        for(int i=N;i<=2*N;i++)
+        {
+            Node node = random_restart(input_str, i);
+            while(((double)clock()/CLOCKS_PER_SEC) < max_time && node.moveToBestNeighbour()) cnt++;
+            if(node.cost < best_node.cost) best_node = node;
+        }
     }
     best_node.print();
     cout<<best_node.cost<<endl;
+    cout<<cnt<<endl;
+    cout<<((double)clock()/CLOCKS_PER_SEC)<<endl;
     return 0;
 }
