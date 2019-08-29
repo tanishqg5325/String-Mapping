@@ -1,9 +1,0 @@
---C--AGC--
-GTC---AC-G
---C--TG---
-G-CTCTG-TG
---C--GACTG
-G-C-GAAC--
-A-C-CAGC--
-G----TAC--
-1037
