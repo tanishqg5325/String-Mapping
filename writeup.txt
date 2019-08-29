@@ -1,2 +1,6 @@
 1
 Siddhant Mago
+Algorithm:
+We have implemented Local search ( greedy hill climbing ) for the given problem by obtaining the new node by swapping the dashes adjacent to an alphabet in some string ( randomly chosen ). We have implemented best search with tabu list for smaller inputs with size of final strings varying from N to 2*N ( N = length of largest string ), and first-best search for strings of larger lengths to achieve an optimal solution.
+Tanishq Gupta
+Saksham Dhull
