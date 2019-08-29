@@ -241,9 +241,11 @@ int main()
             if(node.cost < best_node.cost) best_node = node;
         }
     }
-    best_node.print();
+    best_node.print(); 
+	#ifdef PROD
     cout<<best_node.cost<<endl;
     cout<<cnt<<endl;
     cout<<((double)clock()/CLOCKS_PER_SEC)<<endl;
+	#endif
     return 0;
 }
